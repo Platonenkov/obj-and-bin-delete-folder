@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Konsole;
 using MathCore;
@@ -12,6 +13,7 @@ namespace Clean_Directory_Bin_Obj
 {
     class Program
     {
+
         static void Main(string[] args)
         {
 
@@ -22,14 +24,23 @@ namespace Clean_Directory_Bin_Obj
             var fileInfo = new FileInfo(file);
 
 
-            if (!currDir.ContainsFile(file)) using (File.Create(fileInfo.FullName)) ;
+            if (!currDir.ContainsFile(file))
+            {
+                using (File.Create(fileInfo.FullName)) ;
+                using (new StreamWriter(fileInfo.FullName, false, Encoding.UTF8)) ;
+            }
 
             try
             {
-                foreach (var dir in File.ReadLines(fileInfo.FullName))
+                var info_dir = File.ReadAllText(fileInfo.FullName, Encoding.UTF8);
+                
+                var dirs = info_dir.Split('\n');
+                foreach (var dir in dirs)
                 {
-                    addres_directories.Add(dir);
+                    var row = dir.Replace("\r", "");
+                    if (row.Length>3) addres_directories.Add(row);
                 }
+
             }
             catch (Exception e)
             {
@@ -43,6 +54,7 @@ namespace Clean_Directory_Bin_Obj
                 Console.ReadLine();
                 return;
             }
+            var tasks = new List<Task>();
 
             foreach (var addres_directory in addres_directories)
             {
@@ -55,10 +67,18 @@ namespace Clean_Directory_Bin_Obj
                 }
                 else
                 {
-                    GetDirectories(addres_directory);
+                    tasks.Add(new Task(() => GetDirectories(addres_directory)));
                 }
 
+
             }
+
+            foreach (var task in tasks)
+            {
+                task.Start();
+            }
+
+            Task.WaitAll(tasks.ToArray());
 
             Console.WriteLine($"---------------FINISH---------------");
             Console.ReadLine();

@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Goblinfactory.ProgressBar" Version="0.4.0" />
     <PackageReference Include="MathCore" Version="0.0.7" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.6.0" />
