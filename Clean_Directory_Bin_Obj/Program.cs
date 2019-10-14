@@ -27,7 +27,6 @@ namespace Clean_Directory_Bin_Obj
             if (!currDir.ContainsFile(file))
             {
                 using (File.Create(fileInfo.FullName)) ;
-                using (new StreamWriter(fileInfo.FullName, false, Encoding.UTF8)) ;
             }
 
             try
