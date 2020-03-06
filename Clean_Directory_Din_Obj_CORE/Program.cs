@@ -5,11 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Konsole;
-using MathCore;
-using Microsoft.VisualBasic.FileIO;
-using SearchOption = System.IO.SearchOption;
 
-namespace Clean_Directory_Bin_Obj
+namespace Clean_Directory_Din_Obj_CORE
 {
     class Program
     {
@@ -89,7 +86,7 @@ namespace Clean_Directory_Bin_Obj
                 }
                 else if (answer == 2)
                 {
-                    CleanDirectories(new string[] { currDir.FullName });
+                    CleanDirectories(new string[]{currDir.FullName});
                 }
             }
             else
@@ -111,7 +108,7 @@ namespace Clean_Directory_Bin_Obj
                 else if (answer == 1)
                 {
                     var directories = ReadSettingsFile(setting_file.FullName).ToArray();
-                    if (directories.Length > 0) CleanDirectories(directories);
+                    if (directories.Length > 0 ) CleanDirectories(directories);
                     else
                     {
                         Console.WriteLine("Not found address in settings file");
