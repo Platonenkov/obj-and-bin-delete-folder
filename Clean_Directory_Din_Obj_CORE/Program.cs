@@ -8,11 +8,16 @@ using Konsole;
 
 namespace Clean_Directory_Din_Obj_CORE
 {
+    //dotnet publish -r win-x64 -c Release --self-contained -o release /p:PublishSingleFile=true /p:PublishTrimmed=true
     class Program
     {
         private static readonly string FileName = "Setting.txt";
+        private static readonly string AutoFileName = "AutoClean.txt";
+        private static readonly string AutoLocalFileName = "AutoCleanLocal.txt";
         private static readonly DirectoryInfo CurrentDirectory = new DirectoryInfo(Environment.CurrentDirectory);
         private static readonly FileInfo SettingFile = new FileInfo(FileName);
+        private static readonly FileInfo AutoSettingFile = new FileInfo(AutoFileName);
+        private static readonly FileInfo AutoLocalSettingFile = new FileInfo(AutoLocalFileName);
 
         private static void CreateSettingFile()
         {
@@ -40,8 +45,6 @@ namespace Clean_Directory_Din_Obj_CORE
                 {
                     tasks.Add(new Task(() => GetDirectories(addres_directory)));
                 }
-
-
             }
 
             foreach (var task in tasks)
@@ -60,67 +63,100 @@ namespace Clean_Directory_Din_Obj_CORE
             var setting_file = SettingFile;
 
             Console.WriteLine("Search of the file of settings");
-
-            //Если файл настроек не найден
-            if (!currDir.ContainsFile(file_name))
+            if (!File.Exists(AutoSettingFile.FullName) && !File.Exists(AutoLocalSettingFile.FullName))
             {
-                Console.WriteLine("File was not found");
-                Console.WriteLine("If you want to create file -  press 1\n"
-                                  + "If you want clean current directory - press 2\n"
-                                  + "To close - press 3");
-                var answer = 0;
-                while (answer == 0)
+                if (!currDir.ContainsFile(file_name))
                 {
-                    Console.WriteLine("Press number from 1 to 3");
-                    var flag = int.TryParse(Console.Read().ToString(), out var press);
-                    if (flag) answer = press > 0 && press < 4 ? press : 0;
+                    if (!File.Exists(AutoLocalSettingFile.FullName))
+                    {
+
+                        Console.WriteLine("File was not found");
+                        Console.WriteLine("If you want to create file -  press 1\n"
+                                          + "If you want clean current directory - press 2\n"
+                                          + "To close - press 3");
+                        var answer = 0;
+                        while (answer == 0)
+                        {
+                            Console.WriteLine("Press number from 1 to 3");
+                            var flag = int.TryParse(Console.ReadLine(), out var press);
+                            if (flag) answer = press > 0 && press < 4 ? press : 0;
+                        }
+
+
+                        if (answer == 3) return;
+                        else if (answer == 1)
+                        {
+                            CreateSettingFile();
+                            NotFindSettingsInFile();
+                            return;
+                        }
+                        else if (answer == 2)
+                        {
+                            CleanDirectories(new string[] { currDir.FullName });
+                        }
+                    }
+                    else
+                        CleanDirectories(new string[] { currDir.FullName });
                 }
-
-
-                if (answer == 3) return;
-                else if (answer == 1)
+                else
                 {
+                    Console.WriteLine("Settings file was found");
+                    Console.WriteLine("If you want to clean directories from file - press 1\n"
+                                      + "If you want clean current directory - press 2\n"
+                                      + "To close - press 3");
+                    var answer = 0;
+                    while (answer == 0)
+                    {
+                        Console.WriteLine("Press number from 1 to 3");
+                        var flag = int.TryParse(Console.ReadLine(), out var press);
+                        if (flag) answer = press > 0 && press < 4 ? press : 0;
+                    }
+
+
+                    if (answer == 3) return;
+                    else if (answer == 1)
+                    {
+                        var directories = ReadSettingsFile(setting_file.FullName).ToArray();
+                        if (directories.Length > 0) CleanDirectories(directories);
+                        else
+                        {
+                            Console.WriteLine("Not found address in settings file");
+                            NotFindSettingsInFile();
+                            return;
+                        }
+                    }
+                    else if (answer == 2)
+                    {
+                        CleanDirectories(new string[] { currDir.FullName });
+                    }
+
+                }
+            }
+            else if (File.Exists(AutoSettingFile.FullName)) //авто удаление из директорий по списку
+            {
+                Console.WriteLine("Work in auto");
+
+                if (!File.Exists(setting_file.FullName))
+                {
+                    Console.WriteLine("It is auto mode, but settings file was not found");
                     CreateSettingFile();
                     NotFindSettingsInFile();
                     return;
                 }
-                else if (answer == 2)
+
+                var directories = ReadSettingsFile(setting_file.FullName).ToArray();
+                if (directories.Length > 0) CleanDirectories(directories);
+                else
                 {
-                    CleanDirectories(new string[]{currDir.FullName});
+                    Console.WriteLine("Not found address in settings file");
+                    NotFindSettingsInFile();
+                    return;
                 }
             }
-            else
+            else if (File.Exists(AutoLocalSettingFile.FullName)) //авто удаление из текущей директории
             {
-                Console.WriteLine("Settings file was found");
-                Console.WriteLine("If you want to clean directories from file - press 1\n"
-                                  + "If you want clean current directory - press 2\n"
-                                  + "To close - press 3");
-                var answer = 0;
-                while (answer == 0)
-                {
-                    Console.WriteLine("Press number from 1 to 3");
-                    var flag = int.TryParse(Console.Read().ToString(), out var press);
-                    if (flag) answer = press > 0 && press < 4 ? press : 0;
-                }
-
-
-                if (answer == 3) return;
-                else if (answer == 1)
-                {
-                    var directories = ReadSettingsFile(setting_file.FullName).ToArray();
-                    if (directories.Length > 0 ) CleanDirectories(directories);
-                    else
-                    {
-                        Console.WriteLine("Not found address in settings file");
-                        NotFindSettingsInFile();
-                        return;
-                    }
-                }
-                else if (answer == 2)
-                {
-                    CleanDirectories(new string[] { currDir.FullName });
-                }
-
+                Console.WriteLine("Work in auto");
+                CleanDirectories(new string[] { currDir.FullName });
             }
 
             Console.WriteLine($"---------------FINISH---------------");

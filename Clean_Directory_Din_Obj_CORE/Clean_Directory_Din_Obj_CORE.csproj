@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>Empty.ico</ApplicationIcon>
+    <StartupObject></StartupObject>
+    <AssemblyName>Clean</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
