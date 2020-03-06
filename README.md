@@ -1,5 +1,6 @@
-# obj-and-bin-delete-folder
-Delete folder obj and bin in project
+### obj-and-bin-delete-folder
+This program clears bin and obg folders from project directory
+Just enter in the Setting.txt rows with full address to directories
+Example: C:\Temp
+If you want enter more that one, split it by Enter
 
-
-First create file Directory-to-clean.txt in directory, write in file path's to directory split path's by enter.
