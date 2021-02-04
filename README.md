@@ -24,3 +24,11 @@ Example:
 
 ## If you use single file publish
 Settings will work in auto-local clean
+
+But you can use command line arguments:
+
+-l : Set automatical local clean
+
+-d D:\Temp ; D:\SomeDirectory  : Set automatical clean two directoryes split by ';'
+
+-a : Ask user what directory need to clean;
