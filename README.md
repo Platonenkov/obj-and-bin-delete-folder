@@ -1,15 +1,21 @@
 ## obj-and-bin-delete-folder
 This program clears bin and obg folders from project directory.
+dotnet publish -r win-x64 -c Release --self-contained -o release /p:PublishSingleFile=true /p:PublishTrimmed=true
 
-Just enter in the Setting.txt rows with full address to directories
+#### Fast start
+Just enter in the Clean.setting rows with full address to directories
 
-Example: C:\Temp
+Example: 
+  "Directories": {
+      "1": "D:\\Test 1",
+      "2": "D:\\SomeDirectory\\Temp"
+    }
 
-If you want enter more that one, split it by Enter
+#### To Use Automatic clean:
+    "AutoClean": true
 
-### To Use Automatic clean, create auto file:
 #### Local clean
-create file - AutoLocalClean.txt
-
-#### to automatic clean setting
-create file - AutoClean.txt
+    "CleanLocal": true
+#### to automatic clean directories in setting
+    "AutoClean": true,
+    "CleanLocal": false
