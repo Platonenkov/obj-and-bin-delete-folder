@@ -3,31 +3,134 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Konsole;
+using Microsoft.Extensions.Configuration;
 
 namespace Clean_Directory_Din_Obj_CORE
 {
     //dotnet publish -r win-x64 -c Release --self-contained -o release /p:PublishSingleFile=true /p:PublishTrimmed=true
     class Program
     {
-        private static readonly string FileName = "Setting.txt";
-        private static readonly string AutoFileName = "AutoClean.txt";
-        private static readonly string AutoLocalFileName = "AutoCleanLocal.txt";
         private static readonly DirectoryInfo CurrentDirectory = new DirectoryInfo(Environment.CurrentDirectory);
-        private static readonly FileInfo SettingFile = new FileInfo(FileName);
-        private static readonly FileInfo AutoSettingFile = new FileInfo(AutoFileName);
-        private static readonly FileInfo AutoLocalSettingFile = new FileInfo(AutoLocalFileName);
 
-        private static void CreateSettingFile()
+        private static bool Auto { get; set; }
+        private static bool LocalClean { get; set; }
+        private static IEnumerable<string> Directories { get; set; }
+
+        static void Main(string[] args)
         {
-            if (!CurrentDirectory.ContainsFile(FileName))
+            GetConfiguration(args);
+
+            var currDir = CurrentDirectory;
+            var directories = Directories.ToArray();
+            Console.WriteLine("CheckS settings");
+            if (!Auto && !LocalClean)
             {
-                using (File.Create(SettingFile.FullName)) ;
+                Console.WriteLine("Settings file was found");
+                Console.WriteLine("If you want to clean directories from file - press 1\n"
+                                  + "If you want clean current directory - press 2\n"
+                                  + "To close - press 3");
+                var answer = 0;
+                while (answer == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Press number from 1 to 3");
+                    var flag = int.TryParse(Console.ReadKey().KeyChar.ToString(), out var press);
+                    if (flag) answer = press > 0 && press < 4 ? press : 0;
+                }
+
+                Console.WriteLine();
+                switch (answer)
+                {
+                    case 3: return;
+                    case 1 when directories.Length > 0:
+                        CleanDirectories(directories);
+                        break;
+                    case 1:
+                        Console.WriteLine("Not found address in settings file");
+                        DirectoriesSectionIsEmpty();
+                        return;
+                    case 2:
+                        CleanDirectories(new string[] { currDir.FullName });
+                        break;
+                }
+            }
+            else if (Auto && !LocalClean) //авто удаление из директорий по списку
+            {
+                Console.WriteLine("Work in auto");
+
+                if (directories.Length == 0)
+                {
+                    Console.WriteLine("Not found address in settings file");
+                    DirectoriesSectionIsEmpty();
+                    return;
+                }
+                CleanDirectories(directories);
+            }
+            else if (LocalClean) //авто удаление из текущей директории
+            {
+                Console.WriteLine("Work in auto");
+                CleanDirectories(new string[] { currDir.FullName });
             }
 
+            Console.WriteLine($"---------------FINISH---------------");
+            Console.ReadLine();
         }
 
+        /// <summary>
+        /// читает файл конфигурации и возвращает настройки
+        /// </summary>
+        /// <param name="args">аргументы командной строки</param>
+        /// <returns>конфигурация приложения</returns>
+        private static IConfiguration GetConfiguration(string[] args)
+        {
+            try
+            {
+                var config =  new ConfigurationBuilder()
+                   .AddJsonFile("Clean.setting", optional: true, reloadOnChange: true)
+                   .AddEnvironmentVariables()
+                   .AddCommandLine(args)
+                   .Build();
+                bool.TryParse(config.GetSection("AutoClean").Value, out var auto);
+                Auto = auto;
+                bool.TryParse(config.GetSection("CleanLocal").Value, out var local);
+                LocalClean = local;
+                Directories = GetDirectoriPathFromConfig(config);
+                return config;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error to read configuration file, check sections\n{e}");
+                Console.ReadLine();
+                throw;
+            }
+        }
+        /// <summary>
+        /// чтение директорий для чистки
+        /// </summary>
+        /// <param name="config">конфигурация</param>
+        /// <returns>список директорий</returns>
+        private static IEnumerable<string> GetDirectoriPathFromConfig(IConfiguration config)
+        {
+            try
+            {
+                var dir_serction = config.GetSection("Directories");
+                return dir_serction.Value == null ? dir_serction.GetChildren().Select(c => c.Value.Trim()).ToArray() : new[] {dir_serction.Value};
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error to read directories configuration\n{e.Message}");
+            }
+
+            return Array.Empty<string>();
+        }
+        /// <summary>
+        /// Запускает процесс очистки каталогов
+        /// </summary>
+        /// <param name="directories">список каталогов</param>
         private static void CleanDirectories(IEnumerable<string> directories)
         {
             var tasks = new List<Task>();
@@ -43,7 +146,7 @@ namespace Clean_Directory_Din_Obj_CORE
                 }
                 else
                 {
-                    tasks.Add(new Task(() => GetDirectories(addres_directory)));
+                    tasks.Add(new Task(() => CleanDirectories(addres_directory)));
                 }
             }
 
@@ -55,150 +158,25 @@ namespace Clean_Directory_Din_Obj_CORE
             Task.WaitAll(tasks.ToArray());
 
         }
-        static void Main(string[] args)
+        /// <summary>
+        /// печатает текст что в настройках нет директорий для очистки
+        /// </summary>
+        private static void DirectoriesSectionIsEmpty()
         {
-
-            var file_name = FileName;
-            var currDir = CurrentDirectory;
-            var setting_file = SettingFile;
-
-            Console.WriteLine("Search of the file of settings");
-            if (!File.Exists(AutoSettingFile.FullName) && !File.Exists(AutoLocalSettingFile.FullName))
-            {
-                if (!currDir.ContainsFile(file_name))
-                {
-                    if (!File.Exists(AutoLocalSettingFile.FullName))
-                    {
-
-                        Console.WriteLine("File was not found");
-                        Console.WriteLine("If you want to create file -  press 1\n"
-                                          + "If you want clean current directory - press 2\n"
-                                          + "To close - press 3");
-                        var answer = 0;
-                        while (answer == 0)
-                        {
-                            Console.WriteLine("Press number from 1 to 3");
-                            var flag = int.TryParse(Console.ReadLine(), out var press);
-                            if (flag) answer = press > 0 && press < 4 ? press : 0;
-                        }
-
-
-                        if (answer == 3) return;
-                        else if (answer == 1)
-                        {
-                            CreateSettingFile();
-                            NotFindSettingsInFile();
-                            return;
-                        }
-                        else if (answer == 2)
-                        {
-                            CleanDirectories(new string[] { currDir.FullName });
-                        }
-                    }
-                    else
-                        CleanDirectories(new string[] { currDir.FullName });
-                }
-                else
-                {
-                    Console.WriteLine("Settings file was found");
-                    Console.WriteLine("If you want to clean directories from file - press 1\n"
-                                      + "If you want clean current directory - press 2\n"
-                                      + "To close - press 3");
-                    var answer = 0;
-                    while (answer == 0)
-                    {
-                        Console.WriteLine("Press number from 1 to 3");
-                        var flag = int.TryParse(Console.ReadLine(), out var press);
-                        if (flag) answer = press > 0 && press < 4 ? press : 0;
-                    }
-
-
-                    if (answer == 3) return;
-                    else if (answer == 1)
-                    {
-                        var directories = ReadSettingsFile(setting_file.FullName).ToArray();
-                        if (directories.Length > 0) CleanDirectories(directories);
-                        else
-                        {
-                            Console.WriteLine("Not found address in settings file");
-                            NotFindSettingsInFile();
-                            return;
-                        }
-                    }
-                    else if (answer == 2)
-                    {
-                        CleanDirectories(new string[] { currDir.FullName });
-                    }
-
-                }
-            }
-            else if (File.Exists(AutoSettingFile.FullName)) //авто удаление из директорий по списку
-            {
-                Console.WriteLine("Work in auto");
-
-                if (!File.Exists(setting_file.FullName))
-                {
-                    Console.WriteLine("It is auto mode, but settings file was not found");
-                    CreateSettingFile();
-                    NotFindSettingsInFile();
-                    return;
-                }
-
-                var directories = ReadSettingsFile(setting_file.FullName).ToArray();
-                if (directories.Length > 0) CleanDirectories(directories);
-                else
-                {
-                    Console.WriteLine("Not found address in settings file");
-                    NotFindSettingsInFile();
-                    return;
-                }
-            }
-            else if (File.Exists(AutoLocalSettingFile.FullName)) //авто удаление из текущей директории
-            {
-                Console.WriteLine("Work in auto");
-                CleanDirectories(new string[] { currDir.FullName });
-            }
-
-            Console.WriteLine($"---------------FINISH---------------");
-            Console.ReadLine();
-        }
-
-        private static void NotFindSettingsInFile()
-        {
-            Console.WriteLine("just enter in the Setting.txt rows with full address to directories\n"
-                              + "Example: C:\\Temp\n"
-                              + "If you want enter more that one, split it by Enter");
-            Console.WriteLine("Press any key to close application");
+            Console.WriteLine("just enter in the Clean.setting rows with full address to directories section\n\n"
+                              + "Example:\n\t"
+                              + "\"Directories\": 	{\n\t\t"
+                              + "\"1\": \"D:\\Test 1\",\n\t\t"
+                              + "\"2\": \"D:\\Test 2\n\t"
+                              + "}");
+            Console.WriteLine("\n\nPress any key to close application");
             Console.ReadKey();
         }
-        private static IEnumerable<string> ReadSettingsFile(string filePath)
-        {
-            var directories = new List<string>();
-            try
-            {
-                var info_dir = File.ReadAllText(filePath, Encoding.UTF8);
-
-                var dirs = info_dir.Split('\n');
-                foreach (var dir in dirs)
-                {
-                    var row = dir.Replace("\r", "");
-                    if (row.Length > 3) directories.Add(row);
-                }
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error to read file");
-                Console.WriteLine();
-                Console.WriteLine(e);
-                throw;
-            }
-
-            return directories;
-
-        }
-
-        private static void GetDirectories(string parent_directory)
+        /// <summary>
+        /// Чистит директорию и вложенные в неё
+        /// </summary>
+        /// <param name="parent_directory">основная директория</param>
+        private static void CleanDirectories(string parent_directory)
         {
             DirectoryInfo parentDirectory = new DirectoryInfo(parent_directory);
             DirectoryInfo[] directories_bin = parentDirectory.GetDirectories("bin", SearchOption.AllDirectories);
@@ -231,7 +209,12 @@ namespace Clean_Directory_Din_Obj_CORE
             Task.WaitAll(tasks.ToArray());
 
         }
-
+        /// <summary>
+        /// Удаляет каталоги
+        /// </summary>
+        /// <param name="directories">список для очистки</param>
+        /// <param name="pb">прогресс</param>
+        /// <param name="dir_name">коревая директория</param>
         private static void DeleteDirectory(DirectoryInfo[] directories, ProgressBar pb, string dir_name)
         {
             if (directories.Length != 0)
