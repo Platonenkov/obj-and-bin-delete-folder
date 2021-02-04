@@ -6,10 +6,12 @@ dotnet publish -r win-x64 -c Release --self-contained -o release /p:PublishSingl
 Just enter in the Clean.setting rows with full address to directories
 
 Example: 
+```json  
   "Directories": {
       "1": "D:\\Test 1",
       "2": "D:\\SomeDirectory\\Temp"
     }
+```
 
 #### To Use Automatic clean:
     "AutoClean": true
