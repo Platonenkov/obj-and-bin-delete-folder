@@ -21,3 +21,6 @@ Example:
 #### to automatic clean directories in setting
     "AutoClean": true,
     "CleanLocal": false
+
+## If you use single file publish
+Settings will work in auto-local clean
