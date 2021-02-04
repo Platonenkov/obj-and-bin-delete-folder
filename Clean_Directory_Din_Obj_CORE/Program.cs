@@ -23,11 +23,53 @@ namespace Clean_Directory_Din_Obj_CORE
         static void Main(string[] args)
         {
             GetConfiguration(args);
+            var settings_row = args.Aggregate((current, s) => current + s);
+            var settings = settings_row.Split('-').Select(r => r.Trim()).ToArray();
 
+            var ask_args = args.Contains(a => a == "-a");
+            var local_args = args.Contains(a => a == "-l");
+            var directory_args = args.Contains(a => a=="-d");
+            string[] directories_from_args = settings.Where(s => s.StartsWith('d')).SelectMany(s =>s.TrimStart('d').Split(';')).ToArray();
             var currDir = CurrentDirectory;
             var directories = Directories.ToArray();
-            Console.WriteLine("CheckS settings");
-            if (!Auto && !LocalClean)
+            Console.WriteLine("Check settings");
+            if (local_args || directory_args || ask_args) // работа по аргументам аргументов
+            {
+                Console.WriteLine("Work in auto by arguments");
+                if (ask_args)
+                {
+                    Console.WriteLine("Input directory to clean");
+                    var dir = Console.ReadLine();
+                    CleanDirectories(new [] { dir });
+                    return;
+                }
+                if (local_args && directory_args)
+                {
+                    if (directories_from_args.Length == 0)
+                    {
+                        Console.WriteLine("Not found address in arguments");
+                    }
+                    else
+                        CleanDirectories(directories_from_args);
+
+                    CleanDirectories(new []{currDir.FullName});
+                }
+                else if (local_args)
+                {
+                    CleanDirectories(new[] { currDir.FullName });
+                }
+                else
+                {
+                    if (directories_from_args.Length == 0)
+                    {
+                        Console.WriteLine("Not found address in arguments");
+                        return;
+                    }
+                    CleanDirectories(directories_from_args);
+
+                }
+            }
+            else if (!Auto && !LocalClean)
             {
                 Console.WriteLine("Settings file was found");
                 Console.WriteLine("If you want to clean directories from file - press 1\n"
@@ -50,7 +92,7 @@ namespace Clean_Directory_Din_Obj_CORE
                         CleanDirectories(directories);
                         break;
                     case 1:
-                        Console.WriteLine("Not found address in settings file");
+                        Console.WriteLine("Not found address in settings file or arguments");
                         DirectoriesSectionIsEmpty();
                         return;
                     case 2:
@@ -58,7 +100,7 @@ namespace Clean_Directory_Din_Obj_CORE
                         break;
                 }
             }
-            else if (Auto && !LocalClean) //авто удаление из директорий по списку
+            else if (Auto && !LocalClean ) //авто удаление из директорий по списку
             {
                 Console.WriteLine("Work in auto");
 
