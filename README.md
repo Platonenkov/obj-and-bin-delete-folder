@@ -1,6 +1,5 @@
 ## obj-and-bin-delete-folder
 This program clears bin and obg folders from project directory.
-dotnet publish -r win-x64 -c Release --self-contained -o release /p:PublishSingleFile=true /p:PublishTrimmed=true
 
 #### Fast start
 Just enter in the Clean.setting rows with full address to directories
@@ -23,6 +22,9 @@ Example:
     "CleanLocal": false
 
 ## If you use single file publish
+
+dotnet publish -r win-x64 -c Release --self-contained -o release /p:PublishSingleFile=true /p:PublishTrimmed=true
+
 Settings will work in auto-local clean
 
 But you can use command line arguments:
