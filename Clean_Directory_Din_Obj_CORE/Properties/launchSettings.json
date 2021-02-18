@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Clean_Directory_Din_Obj_CORE": {
-      "commandName": "Project",
-      "commandLineArgs": "-a"
+      "commandName": "Project"
     }
   }
 }

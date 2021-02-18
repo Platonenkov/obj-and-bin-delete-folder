@@ -23,7 +23,7 @@ namespace Clean_Directory_Din_Obj_CORE
         static void Main(string[] args)
         {
             GetConfiguration(args);
-            var settings_row = args.Aggregate((current, s) => current + s);
+            var settings_row = args.Length>0 ? args.Aggregate((current, s) => current + s):string.Empty;
             var settings = settings_row.Split('-').Select(r => r.Trim()).ToArray();
 
             var ask_args = args.Contains(a => a == "-a");
