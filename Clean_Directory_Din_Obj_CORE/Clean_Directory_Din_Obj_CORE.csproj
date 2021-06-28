@@ -2,15 +2,26 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <ApplicationIcon>Empty.ico</ApplicationIcon>
     <StartupObject></StartupObject>
     <AssemblyName>Clean</AssemblyName>
+    <Authors>Platonenkov A.</Authors>
+    <Copyright>https://github.com/Platonenkov</Copyright>
+    <Description>Очищает паки bin и obj  в проектах решения</Description>
+    <PackageProjectUrl>https://github.com/Platonenkov/obj-and-bin-delete-folder</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Platonenkov/obj-and-bin-delete-folder</RepositoryUrl>
+    <RepositoryType>GetHub</RepositoryType>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <PackageReleaseNotes>переход на net5.0</PackageReleaseNotes>
+    <Version>2.0.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Goblinfactory.ProgressBar" Version="0.4.0" />
-    <PackageReference Include="MathCore" Version="0.0.20.2" />
+    <PackageReference Include="Goblinfactory.ProgressBar" Version="1.0.0" />
+    <PackageReference Include="MathCore" Version="0.0.49" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
